@@ -40,7 +40,7 @@ module.exports = {
 			const userData = await User.findByPk(req.params.userId);
 			const user = userData.get({ plain: true });
 			res.render('singleUser', {
-				user
+				dish
 			});
 		} catch (error) {
 			res.json(error);
