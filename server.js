@@ -1,26 +1,31 @@
+require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const exphbs = require('express-handlebars');
+const session = require('express-session');
+const routes = require('./routes');
 const sequelize = require('./config');
-const routes = require('./routes')
-const hbs = exphbs.create({});
-
+const helpers = require('./utils/helpers');
+const hbs = exphbs.create({
+	helpers,
+});
 const app = express();
-
 const PORT = process.env.PORT || 3001;
-
-// Tells node we are using handlebars as our
-// templateing engine and configured handlebars as the 
-// view engine
+const sessionSettings = {
+	secret: process.env.SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false,
+};
+// Tells node we're using handlebars as our templating engine
+// configured handlebars as the view engine
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
-
-// body parser
+// somePath/public
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(session(sessionSettings));
 app.use(routes);
-
-// Connect to the database prior to starting our server
-sequelize.sync().then(() => {
-    app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));
+sequelize.sync({ force: false }).then(() => {
+	app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
 });
